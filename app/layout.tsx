@@ -11,7 +11,7 @@ import { authOption } from '../pages/api/auth/[...nextauth]'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'brAInT',
+  title: 'brAIn',
   description: 'brAIn',
 }
 
