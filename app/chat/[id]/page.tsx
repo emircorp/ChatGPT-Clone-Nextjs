@@ -1,28 +1,22 @@
-"use client";
-
-import Chat from "@/app/components/Chat";
-import ChatInput from "@/app/components/ChatInput";
-import { motion } from "framer-motion";
-import React from "react";
+import Chat from "../../components/Chat";
+import ChatInput from "../../components/ChatInput";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../api/auth/[...nextauth]/route";
 
 type Props = {
-  params: {
-    id: string;
-  };
+  params: { chatId: string };
 };
 
-function ChatPage({ params: { id } }: Props) {
+export default async function ChatPage({ params: { chatId } }: Props) {
+  const session = await getServerSession(authOptions);
+
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true }}
-      className="flex flex-col h-screen overflow-hidden"
-    >
-      <Chat chatId={id} />
-      <ChatInput chatId={id} />
-    </motion.div>
+    <div className="flex flex-col h-screen">
+      {/* ✅ Mesajlar */}
+      <Chat chatId={chatId} />
+
+      {/* ✅ Input alanı */}
+      <ChatInput chatId={chatId} />
+    </div>
   );
 }
-
-export default ChatPage;
