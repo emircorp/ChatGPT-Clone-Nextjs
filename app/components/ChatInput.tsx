@@ -1,12 +1,12 @@
 "use client";
 
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { useSession } from "next-auth/react";
 import React, { useState } from "react";
 import { toast } from "react-hot-toast";
 import useSWR from "swr";
+import { ref, push, serverTimestamp } from "firebase/database";
 
-import { firestore } from "../firebase/firebase";
+import { database } from "../firebase/firebase";
 
 type Props = {
   chatId: string;
@@ -24,59 +24,49 @@ function ChatInput({ chatId }: Props) {
   const generateResponse = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    try {
-      if (!prompt && !session) return;
+    if (!prompt || !session) return;
 
-      const input = prompt.trim();
-      setPrompt("");
+    const input = prompt.trim();
+    setPrompt("");
+    setIsLoading(false);
 
-      setIsLoading(false);
+    const message = {
+      text: input,
+      createdAt: Date.now(),
+      user: {
+        name: session.user?.name || "User",
+        email: session.user?.email || "no@email.com",
+        avatar:
+          session.user?.image ||
+          `https://ui-avatars.com/api/?name=${session.user?.name}`,
+      },
+    };
 
-      const message: Message = {
-        text: input,
-        createdAt: serverTimestamp(),
-        user: {
-          name: session?.user?.name!,
-          email: session?.user?.email!,
-          avatar:
-            session?.user?.image ||
-            `https://ui-avatars.com/api/?name=${session?.user?.name!}`,
-        },
-      };
+    const userKey = session.user?.email?.replace(/\./g, "_");
+    const messageRef = ref(
+      database,
+      `users/${userKey}/chats/${chatId}/messages`
+    );
 
-      await addDoc(
-        collection(
-          firestore,
-          `users/${session?.user?.email!}/chats/${chatId}/messages`
-        ),
-        message
-      );
+    await push(messageRef, message);
 
-      // loading
-      const notification = toast.loading("ChatGPT is thinking...");
+    const notification = toast.loading("brAIn is thinking...");
 
-      await fetch("/api/askQuestion", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          prompt: input,
-          chatId,
-          model,
-          session,
-        }),
-      }).then(() => {
-        // Tost Notification
-        toast.success("ChatGPT has responded!", {
-          id: notification,
-        });
+    await fetch("/api/askQuestion", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        prompt: input,
+        chatId,
+        model,
+        session,
+      }),
+    });
 
-        setIsLoading(true);
-      });
-    } catch (error: any) {
-      console.log(error.message);
-    }
+    toast.success("brAIn responded!", { id: notification });
+    setIsLoading(true);
   };
 
   return (
@@ -94,12 +84,12 @@ function ChatInput({ chatId }: Props) {
             }`}
           />
 
-          {loading ? (
-            <button
-              type="submit"
-              disabled={!prompt || !session}
-              className="bg-[#11A37F] hover:opacity-70 text-white font-bold px-3 py-2 rounded-lg disabled:bg-[#40414F] disabled:cursor-not-allowed"
-            >
+          <button
+            type="submit"
+            disabled={!prompt || !session}
+            className="bg-[#11A37F] hover:opacity-70 text-white font-bold px-3 py-2 rounded-lg disabled:bg-[#40414F] disabled:cursor-not-allowed"
+          >
+            {loading ? (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -114,13 +104,7 @@ function ChatInput({ chatId }: Props) {
                   d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
                 />
               </svg>
-            </button>
-          ) : (
-            <button
-              type="submit"
-              disabled={!session}
-              className="bg-[#11A37F] hover:opacity-70 text-white font-bold px-3 py-2 rounded-lg disabled:bg-[#40414F] disabled:cursor-not-allowed"
-            >
+            ) : (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -135,8 +119,8 @@ function ChatInput({ chatId }: Props) {
                   d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
                 />
               </svg>
-            </button>
-          )}
+            )}
+          </button>
         </form>
       </div>
     </div>
