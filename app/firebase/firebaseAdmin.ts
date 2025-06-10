@@ -8,9 +8,9 @@ const serviceAccount = JSON.parse(
 if (!getApps().length) {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
+    databaseURL: "https://brain-ai-online-official.firebaseio.com",
   });
 }
 
-const adminDb = admin.firestore();
-
+const adminDb = admin.database(); 
 export { adminDb };
