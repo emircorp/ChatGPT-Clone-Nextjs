@@ -1,6 +1,5 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import { adminDb } from "@/app/firebase/firebaseAdmin";
-import query from "@/app/utils/queryApi";
 import admin from "firebase-admin";
 import type { NextApiRequest, NextApiResponse } from "next";
 
@@ -15,7 +14,7 @@ export default async function handler(
   const { prompt, chatId, model, session } = req.body;
 
   if (!prompt) {
-    res.status(400).json({ answer: "Please Provide a prompt" });
+    res.status(400).json({ answer: "Please provide a prompt" });
     return;
   }
 
@@ -24,28 +23,45 @@ export default async function handler(
     return;
   }
 
-  // ChatGpt Query
+  try {
+    const apiResponse = await fetch(process.env.NEXT_PUBLIC_API_URL!, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ prompt, chatId, model }),
+    });
 
-  const response = await query(prompt, chatId, model);
+    if (!apiResponse.ok) {
+      const errorText = await apiResponse.text();
+      throw new Error(`API error: ${errorText}`);
+    }
 
-  const message: Message = {
-    text: response || "brAIn Error: 42498501",
-    createdAt: admin.firestore.Timestamp.now(),
-    user: {
-      name: "brAIn",
-      email: "brAIn",
-      avatar:
-        "https://drive.google.com/uc?export=download&id=1ikaBBU-OsBSHkleHQmf15ww0vgX-A0Kz",
-    },
-  };
+    const responseData = await apiResponse.json();
 
-  await adminDb
-    .collection("users")
-    .doc(session?.user?.email)
-    .collection("chats")
-    .doc(chatId)
-    .collection("messages")
-    .add(message);
+    const answer = responseData.answer || "Unable to get an answer from API";
 
-  res.status(200).json({ answer: message.text });
+    const message = {
+      text: answer,
+      createdAt: admin.firestore.Timestamp.now(),
+      user: {
+        name: "ChatGPT",
+        email: "ChatGPT",
+        avatar:
+          "https://drive.google.com/uc?export=download&id=1ikaBBU-OsBSHkleHQmf15ww0vgX-A0Kz",
+      },
+    };
+
+    await adminDb
+      .collection("users")
+      .doc(session?.user?.email)
+      .collection("chats")
+      .doc(chatId)
+      .collection("messages")
+      .add(message);
+
+    res.status(200).json({ answer: message.text });
+  } catch (error: any) {
+    res.status(500).json({ answer: `Error: ${error.message}` });
+  }
 }
