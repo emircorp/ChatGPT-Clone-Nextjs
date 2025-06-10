@@ -1,21 +1,20 @@
-// app/firebase/firebaseAdmin.ts
-
 import admin from "firebase-admin";
 import { getApps } from "firebase-admin/app";
 
-// .env'den gelen service account key'i parse et
-const serviceAccount = JSON.parse(
-  process.env.FIREBASE_SERVICE_ACCOUNT_KEY as string
-);
+// Base64 olarak saklanan service account'u decode et
+const decodedServiceAccount = Buffer.from(
+  process.env.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 as string,
+  "base64"
+).toString("utf-8");
 
-// Firebase admin uygulamasını başlat
+const serviceAccount = JSON.parse(decodedServiceAccount);
+
 if (!getApps().length) {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: "https://brain-ai-online-official.firebaseio.com", // Realtime DB URL
+    databaseURL: "https://brain-ai-online-official.firebaseio.com",
   });
 }
 
-// Realtime Database instance'ı dışa aktar
 const adminDb = admin.database();
 export { adminDb };
