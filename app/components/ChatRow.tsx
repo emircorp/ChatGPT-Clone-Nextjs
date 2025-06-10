@@ -12,6 +12,16 @@ type Props = {
   session: Session | null;
 };
 
+type MessageData = {
+  text: string;
+  createdAt: number;
+  user: {
+    name: string;
+    email: string;
+    avatar: string;
+  };
+};
+
 function ChatRow({ id, session }: Props) {
   const pathname = usePathname();
   const router = useRouter();
@@ -31,11 +41,9 @@ function ChatRow({ id, session }: Props) {
     const unsubscribe = onValue(messagesRef, (snapshot) => {
       const messagesData = snapshot.val();
       if (messagesData) {
-        const entries = Object.entries(messagesData);
-        const sorted = entries.sort(
-          (a: any, b: any) => a[1].createdAt - b[1].createdAt
-        );
-        const last = sorted[sorted.length - 2]?.[1]?.text || "New Chat";
+        const entries = Object.entries(messagesData) as [string, MessageData][];
+        const sorted = entries.sort((a, b) => a[1].createdAt - b[1].createdAt);
+        const last = sorted[sorted.length - 1]?.[1]?.text || "New Chat";
         setLastMessage(last);
       } else {
         setLastMessage("New Chat");
