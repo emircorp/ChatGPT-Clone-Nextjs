@@ -14,8 +14,8 @@ function Sidebar() {
   const { data: session } = useSession();
   const [open, setOpen] = useState(true);
 
-  const userKey = session?.user?.email?.replace(/\./g, "_");
-  const chatsRef = ref(database, `users/${userKey}/chats`);
+  const userKey = session?.user?.email?.replace(/\./g, "_") || null;
+  const chatsRef = userKey ? ref(database, `users/${userKey}/chats`) : null;
   const [snapshots, loading, error] = useList(chatsRef);
 
   const toggleSidebar = () => setOpen(!open);
@@ -32,8 +32,9 @@ function Sidebar() {
           </svg>
         </div>
       ) : (
-        <div className={`p-2 flex flex-col h-screen bg-[#202123] w-72`}>
+        <div className="p-2 flex flex-col h-screen bg-[#202123] w-72">
           <div className="flex-1 overflow-y-scroll">
+            {/* ✅ Her zaman erişilebilir */}
             <NewChat session={session} toggleSidebar={toggleSidebar} />
 
             <p className="text-gray-400 mt-4 ml-4 pb-0 text-sm">Previous Chats</p>
@@ -43,6 +44,10 @@ function Sidebar() {
                 <div className="animate-pulse text-center text-white">
                   <p>Loading Chats...</p>
                 </div>
+              )}
+
+              {!loading && snapshots?.length === 0 && (
+                <p className="text-gray-500 text-center">No chats yet</p>
               )}
 
               {snapshots?.map((chatSnap) => (
