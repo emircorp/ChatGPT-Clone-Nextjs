@@ -1,15 +1,10 @@
 "use client";
 
-import {
-  addDoc,
-  collection,
-  serverTimestamp,
-  Timestamp,
-} from "firebase/firestore";
+import { push, ref, serverTimestamp, set } from "firebase/database";
 import { Session } from "next-auth";
 import { useRouter } from "next/navigation";
 import React from "react";
-import { firestore } from "../firebase/firebase";
+import { database } from "../firebase/firebase"; // RTDB bağlantısı
 
 type Props = {
   session: Session | null;
@@ -20,29 +15,30 @@ function NewChat({ session, toggleSidebar }: Props) {
   const router = useRouter();
 
   const createNewChat = async () => {
-    try {
-      if (!session) return;
+    if (!session?.user?.email) return;
 
-      const doc = await addDoc(
-        collection(firestore, `users/${session.user?.email}/chats`),
-        {
-          userId: session?.user?.email,
-          userEmail: session?.user?.email,
-          createdAt: serverTimestamp() as Timestamp,
-        }
-      );
+    const userKey = session.user.email.replace(/\./g, "_");
+    const chatRef = ref(database, `users/${userKey}/chats`);
+    const newChatRef = push(chatRef); // benzersiz ID oluşturur
 
-      if (!doc.id) return;
+    const chatId = newChatRef.key;
+    if (!chatId) return;
 
-      router.push(`/chat/${doc.id}`);
-    } catch (error: any) {
-      console.log(error.message);
-    }
+    await set(newChatRef, {
+      userId: session.user.email,
+      userEmail: session.user.email,
+      createdAt: serverTimestamp(),
+    });
+
+    router.push(`/chat/${chatId}`);
   };
 
   return (
     <div className="flex">
-      <div className="chatRow border-gray-500 hover:bg-[#202123] border flex-1 justify-start rounded-lg" onClick={createNewChat}>
+      <div
+        className="chatRow border-gray-500 hover:bg-[#202123] border flex-1 justify-start rounded-lg"
+        onClick={createNewChat}
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
@@ -57,9 +53,23 @@ function NewChat({ session, toggleSidebar }: Props) {
         </svg>
         <p>New Chat</p>
       </div>
-      <div onClick={() => toggleSidebar()} className="flex min-w-[50px] ml-2 justify-center items-center border-gray-500 border rounded-lg cursor-pointer">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-white">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+      <div
+        onClick={() => toggleSidebar()}
+        className="flex min-w-[50px] ml-2 justify-center items-center border-gray-500 border rounded-lg cursor-pointer"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="currentColor"
+          className="w-5 h-5 text-white"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+          />
         </svg>
       </div>
     </div>
