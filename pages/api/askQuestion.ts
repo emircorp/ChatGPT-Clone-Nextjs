@@ -1,6 +1,5 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import { adminDb } from "@/app/firebase/firebaseAdmin";
-import admin from "firebase-admin";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 type Data = {
@@ -14,13 +13,11 @@ export default async function handler(
   const { prompt, chatId, model, session } = req.body;
 
   if (!prompt) {
-    res.status(400).json({ answer: "Please provide a prompt" });
-    return;
+    return res.status(400).json({ answer: "Please provide a prompt." });
   }
 
   if (!chatId) {
-    res.status(400).json({ answer: "Please provide a valid chat Id" });
-    return;
+    return res.status(400).json({ answer: "Please provide a valid chat ID." });
   }
 
   try {
@@ -43,25 +40,25 @@ export default async function handler(
 
     const message = {
       text: answer,
-      createdAt: admin.firestore.Timestamp.now(),
+      createdAt: Date.now(), // ✅ Firestore timestamp değil!
       user: {
-        name: "ChatGPT",
-        email: "ChatGPT",
+        name: "brAIn",
+        email: "brAIn",
         avatar:
           "https://drive.google.com/uc?export=download&id=1ikaBBU-OsBSHkleHQmf15ww0vgX-A0Kz",
       },
     };
 
-    await adminDb
-      .collection("users")
-      .doc(session?.user?.email)
-      .collection("chats")
-      .doc(chatId)
-      .collection("messages")
-      .add(message);
+    // ✅ E-posta adresi "." karakterinden arındırılıyor (RealtimeDB için)
+    const userKey = session?.user?.email.replace(/\./g, "_");
 
-    res.status(200).json({ answer: message.text });
+    // ✅ Realtime Database'e veri yazılıyor
+    await adminDb
+      .ref(`users/${userKey}/chats/${chatId}/messages`)
+      .push(message);
+
+    return res.status(200).json({ answer: message.text });
   } catch (error: any) {
-    res.status(500).json({ answer: `Error: ${error.message}` });
+    return res.status(500).json({ answer: `Error: ${error.message}` });
   }
 }
