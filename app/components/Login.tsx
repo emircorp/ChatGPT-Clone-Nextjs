@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+} from "firebase/auth";
 import { auth } from "../firebase/firebase";
 
 type Props = {};
@@ -9,6 +14,7 @@ type Props = {};
 function Login({}: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isSignUp, setIsSignUp] = useState(false);
 
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
@@ -17,7 +23,11 @@ function Login({}: Props) {
 
   const handleEmailLogin = async () => {
     if (!email || !password) return;
-    await signInWithEmailAndPassword(auth, email, password);
+    if (isSignUp) {
+      await createUserWithEmailAndPassword(auth, email, password);
+    } else {
+      await signInWithEmailAndPassword(auth, email, password);
+    }
   };
 
   return (
@@ -43,7 +53,13 @@ function Login({}: Props) {
             onClick={handleEmailLogin}
             className="w-full bg-[#11A37F] hover:opacity-80 text-white py-2 rounded"
           >
-            Sign In
+            {isSignUp ? "Create Account" : "Sign In"}
+          </button>
+          <button
+            onClick={() => setIsSignUp(!isSignUp)}
+            className="w-full text-xs text-gray-400 hover:underline"
+          >
+            {isSignUp ? "Back to Sign In" : "Need an account? Sign Up"}
           </button>
           <div className="text-center text-gray-400">or</div>
           <button
@@ -61,4 +77,6 @@ function Login({}: Props) {
   );
 }
 
+
 export default Login;
+
