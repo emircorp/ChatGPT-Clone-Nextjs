@@ -30,7 +30,7 @@ This project was created using the following technologies -
 * React-hot-toast (for notifications)
 * FirebaseAuth & NextAuth (for authentication)
 * SWR (for response fetching)
-* Firebase (cloud firestore)
+* Firebase (Realtime Database)
 * vercel (for hosting)
 
 ## Installation
