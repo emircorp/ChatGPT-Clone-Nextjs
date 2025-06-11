@@ -26,7 +26,7 @@ export async function sendData(data: MessagePayload): Promise<any> {
   const res = await fetch("/api/rtdbHandler", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data), // RTDB için doğrudan data yollanıyor
+    body: JSON.stringify(data), // Send data directly to RTDB
   });
 
   if (!res.ok) {
