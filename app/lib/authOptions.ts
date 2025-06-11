@@ -5,7 +5,7 @@ export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.WEB_CLIENT_ID!,
-      clientSecret: process.env.WEB_CLIENT_KEY!,
+      clientSecret: process.env.WEB_CLIENT_SECRET!,
     }),
   ],
   callbacks: {
