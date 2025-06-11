@@ -2,19 +2,20 @@
 
 import { useList } from "react-firebase-hooks/database";
 import { ref } from "firebase/database";
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "firebase/auth";
+import { useAuthState } from "react-firebase-hooks/auth";
 import { motion } from "framer-motion";
 import React, { useState } from "react";
 
 import ChatRow from "./ChatRow";
 import NewChat from "./NewChat";
-import { database } from "../firebase/firebase";
+import { auth, database } from "../firebase/firebase";
 
 function Sidebar() {
-  const { data: session } = useSession();
+  const [user] = useAuthState(auth);
   const [open, setOpen] = useState(true);
 
-  const userKey = session?.user?.email?.replace(/\./g, "_") || null;
+  const userKey = user?.email?.replace(/\./g, "_") || null;
   const chatsRef = userKey ? ref(database, `users/${userKey}/chats`) : null;
   const [snapshots, loading, error] = useList(chatsRef);
 
@@ -35,7 +36,7 @@ function Sidebar() {
         <div className="p-2 flex flex-col h-screen bg-[#202123] w-72">
           <div className="flex-1 overflow-y-scroll">
             {/* ✅ Her zaman erişilebilir */}
-            <NewChat session={session} toggleSidebar={toggleSidebar} />
+            <NewChat toggleSidebar={toggleSidebar} />
 
             <p className="text-gray-400 mt-4 ml-4 pb-0 text-sm">Previous Chats</p>
 
@@ -57,26 +58,26 @@ function Sidebar() {
                   viewport={{ once: true }}
                   key={chatSnap.key}
                 >
-                  <ChatRow id={chatSnap.key!} session={session} />
+                  <ChatRow id={chatSnap.key!} />
                 </motion.div>
               ))}
             </div>
           </div>
 
-          {session && (
+          {user && (
             <div className="border-t border-gray-400 py-3">
               <div className="chatRow items-center justify-start gap-5">
                 <img
-                  src={session.user?.image!}
-                  alt={session.user?.name!}
+                  src={user.photoURL || ""}
+                  alt={user.displayName || ""}
                   className="h-8 w-8 rounded-sm cursor-pointer hover:opacity-50"
                 />
-                <p>{session.user?.name}</p>
+                <p>{user.displayName}</p>
               </div>
 
               <div
                 className="chatRow items-center justify-start gap-5"
-                onClick={() => signOut()}
+                onClick={() => signOut(auth)}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />

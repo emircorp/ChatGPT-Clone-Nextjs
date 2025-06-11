@@ -1,19 +1,19 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import React, { useState } from "react";
+import { useAuthState } from "react-firebase-hooks/auth";
 import { toast } from "react-hot-toast";
 import useSWR from "swr";
 import { ref, push, serverTimestamp } from "firebase/database";
 
-import { database } from "../firebase/firebase";
+import { auth, database } from "../firebase/firebase";
 
 type Props = {
   chatId: string;
 };
 
 function ChatInput({ chatId }: Props) {
-  const { data: session } = useSession();
+  const [user] = useAuthState(auth);
   const [prompt, setPrompt] = useState("");
   const [loading, setIsLoading] = useState(true);
 
@@ -24,7 +24,7 @@ function ChatInput({ chatId }: Props) {
   const generateResponse = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!prompt || !session) return;
+    if (!prompt || !user) return;
 
     const input = prompt.trim();
     setPrompt("");
@@ -34,15 +34,15 @@ function ChatInput({ chatId }: Props) {
       text: input,
       createdAt: Date.now(),
       user: {
-        name: session.user?.name || "User",
-        email: session.user?.email || "no@email.com",
+        name: user?.displayName || "User",
+        email: user?.email || "no@email.com",
         avatar:
-          session.user?.image ||
-          `https://ui-avatars.com/api/?name=${session.user?.name}`,
+          user?.photoURL ||
+          `https://ui-avatars.com/api/?name=${user?.displayName}`,
       },
     };
 
-    const userKey = session.user?.email?.replace(/\./g, "_");
+    const userKey = user?.email?.replace(/\./g, "_");
     const messageRef = ref(
       database,
       `users/${userKey}/chats/${chatId}/messages`
@@ -61,7 +61,7 @@ function ChatInput({ chatId }: Props) {
         prompt: input,
         chatId,
         model,
-        session,
+        userEmail: user?.email,
       }),
     });
 
@@ -78,7 +78,7 @@ function ChatInput({ chatId }: Props) {
             placeholder="Type your message here..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            disabled={!session}
+            disabled={!user}
             className={`bg-transparent focus:outline-none flex-1 disabled:cursor-not-allowed disabled:text-gray-300 ${
               !loading && "animate-pulse"
             }`}
@@ -86,7 +86,7 @@ function ChatInput({ chatId }: Props) {
 
           <button
             type="submit"
-            disabled={!prompt || !session}
+            disabled={!prompt || !user}
             className="bg-[#11A37F] hover:opacity-70 text-white font-bold px-3 py-2 rounded-lg disabled:bg-[#40414F] disabled:cursor-not-allowed"
           >
             {loading ? (

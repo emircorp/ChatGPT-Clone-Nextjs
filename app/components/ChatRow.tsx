@@ -1,15 +1,14 @@
 "use client";
 
 import { onValue, ref, remove } from "firebase/database";
-import { Session } from "next-auth";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { database } from "../firebase/firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth, database } from "../firebase/firebase";
 
 type Props = {
   id: string;
-  session: Session | null;
 };
 
 type MessageData = {
@@ -22,11 +21,12 @@ type MessageData = {
   };
 };
 
-function ChatRow({ id, session }: Props) {
+function ChatRow({ id }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const [active, setActive] = useState(false);
   const [lastMessage, setLastMessage] = useState<string | null>(null);
+  const [user] = useAuthState(auth);
 
   useEffect(() => {
     if (!pathname) return;
@@ -34,8 +34,8 @@ function ChatRow({ id, session }: Props) {
   }, [pathname, id]);
 
   useEffect(() => {
-    if (!session?.user?.email) return;
-    const userKey = session.user.email.replace(/\./g, "_");
+    if (!user?.email) return;
+    const userKey = user.email.replace(/\./g, "_");
     const messagesRef = ref(database, `users/${userKey}/chats/${id}/messages`);
 
     const unsubscribe = onValue(messagesRef, (snapshot) => {
@@ -51,10 +51,10 @@ function ChatRow({ id, session }: Props) {
     });
 
     return () => unsubscribe();
-  }, [session, id]);
+  }, [user, id]);
 
   const removeChat = async () => {
-    const userKey = session?.user?.email?.replace(/\./g, "_");
+    const userKey = user?.email?.replace(/\./g, "_");
     if (!userKey) return;
 
     await remove(ref(database, `users/${userKey}/chats/${id}`));

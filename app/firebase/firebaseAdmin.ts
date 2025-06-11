@@ -12,7 +12,7 @@ const serviceAccount = JSON.parse(decodedServiceAccount);
 if (!getApps().length) {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: "https://brain-ai-online-official.firebaseio.com",
+    databaseURL: process.env.FIREBASE_DATABASE_URL,
   });
 }
 
