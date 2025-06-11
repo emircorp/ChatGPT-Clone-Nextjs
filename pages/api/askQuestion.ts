@@ -10,7 +10,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  const { prompt, chatId, model, session } = req.body;
+  const { prompt, chatId, model, userEmail } = req.body;
 
   if (!prompt) {
     return res.status(400).json({ answer: "Please provide a prompt." });
@@ -50,7 +50,7 @@ export default async function handler(
     };
 
     // ✅ E-posta adresi "." karakterinden arındırılıyor (RealtimeDB için)
-    const userKey = session?.user?.email.replace(/\./g, "_");
+    const userKey = userEmail?.replace(/\./g, "_");
 
     // ✅ Realtime Database'e veri yazılıyor
     await adminDb

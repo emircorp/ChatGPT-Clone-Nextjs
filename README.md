@@ -1,6 +1,6 @@
-# ChatGPT Clone
+# brAIn Chat
 
-A ChatGPT clone created with NextJs, TailwindCSS, Typescript, Firebase for Google-Authentication & Realtime Database, Vercel SWR for Data Fetching and ChatGPT API.
+A chat interface built with Next.js, TailwindCSS and Typescript. It uses Firebase for authentication and the Realtime Database and communicates with our brAIn v1-mini API.
 
 https://github.com/chirag-23/ChatGPT-Clone-Nextjs/assets/76790227/f0bd43a7-3eeb-4ee4-a877-d93fcaa73c98
 
@@ -18,17 +18,17 @@ https://github.com/chirag-23/ChatGPT-Clone-Nextjs/assets/76790227/f0bd43a7-3eeb-
 
 * <b>Real-time Updates:</b> Stay informed with real-time data fetching using React-hot-toast notifications, keeping you up-to-date with the latest information.
 
-* <b>ChatGPT API Integration:</b> Engage in real-time interactions with the ChatGPT API, enabling dynamic and responsive conversations.
+* <b>brAIn API Integration:</b> Chat with our brAIn v1-mini model for dynamic and responsive conversations.
 
 ## Technologies Used
 This project was created using the following technologies -
 
 * NextJs
 * TypeScript 
-* Open AI
+* brAIn API
 * TailwindCSS & heroicons (for user interface)
 * React-hot-toast (for notifications)
-* FirebaseAuth & NextAuth (for authentication)
+* Firebase Authentication
 * SWR (for response fetching)
 * Firebase (cloud firestore)
 * vercel (for hosting)
@@ -52,14 +52,6 @@ npm install
 ```
 To run this project, you will need to add the following environment variables to your .env file
 
-`CHAT_GPT_KEY`
-
-`NEXTAUTH_URL`
-
-`WEB_CLIENT_ID`
-
-`WEB_CLIENT_SECRET`
-
 `NEXT_PUBLIC_FIREBASE_API_KEY`
 
 `NEXT_PUBLIC_BASE_URL`
@@ -79,6 +71,8 @@ To run this project, you will need to add the following environment variables to
 `FIREBASE_SERVICE_ACCOUNT_KEY`
 
 `FIREBASE_DATABASE_URL`
+
+`NEXT_PUBLIC_API_URL`
 
 Build project:
 ```bash

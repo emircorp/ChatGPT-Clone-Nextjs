@@ -1,27 +1,27 @@
 "use client";
 
 import { push, ref } from "firebase/database";
-import { Session } from "next-auth";
+import { useAuthState } from "react-firebase-hooks/auth";
 import { useRouter } from "next/navigation";
 import React from "react";
-import { database } from "../firebase/firebase";
+import { auth, database } from "../firebase/firebase";
 
 type Props = {
-  session: Session | null;
   toggleSidebar: () => void;
 };
 
-function NewChat({ session, toggleSidebar }: Props) {
+function NewChat({ toggleSidebar }: Props) {
   const router = useRouter();
+  const [user] = useAuthState(auth);
 
   const createNewChat = async () => {
-    if (!session?.user?.email) return;
+    if (!user?.email) return;
 
-    const userKey = session.user.email.replace(/\./g, "_");
+    const userKey = user.email.replace(/\./g, "_");
     const chatsRef = ref(database, `users/${userKey}/chats`);
     const newChatRef = await push(chatsRef, {
-      userId: session.user.email,
-      userEmail: session.user.email,
+      userId: user.email,
+      userEmail: user.email,
       createdAt: Date.now(),
     });
 

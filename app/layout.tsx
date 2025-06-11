@@ -1,12 +1,14 @@
+"use client";
+
 import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import Sidebar from './components/Sidebar'
-import SessionProvider from './components/SessionProvider'
-import { getServerSession } from "next-auth";
+
 import Login from './components/Login'
 import ClientProvider from './components/ClientProvider'
-import { authOptions } from './api/auth/[...nextauth]/route';
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "./firebase/firebase";
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -15,32 +17,27 @@ export const metadata: Metadata = {
   description: 'brAIn',
 }
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const session = await getServerSession(authOption);
+  const [user, loading] = useAuthState(auth);
 
   return (
     <html lang="en">
       <body className={`${inter.className} bg-[#343541]`}>
-        <SessionProvider session={session}>
-          {
-            !session ? (<Login/>) :
-            (
-              <div className='flex overflow-hidden'>
-                <div className=''>
-                  <Sidebar/>
-                </div>
-                <ClientProvider/>
-                <div className='flex-1'>
-                  {children}
-                </div>
-              </div>
-            )
-          }
-        </SessionProvider>
+        {loading ? null : !user ? (
+          <Login />
+        ) : (
+          <div className='flex overflow-hidden'>
+            <Sidebar />
+            <ClientProvider />
+            <div className='flex-1'>
+              {children}
+            </div>
+          </div>
+        )}
       </body>
     </html>
   )

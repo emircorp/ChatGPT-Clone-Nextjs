@@ -1,11 +1,11 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
+import { useAuthState } from "react-firebase-hooks/auth";
 import { onValue, ref } from "firebase/database";
 
 import Message from "./Message";
-import { database } from "../firebase/firebase";
+import { auth, database } from "../firebase/firebase";
 import HomeContent from "./HomeContent";
 
 type Props = {
@@ -24,14 +24,14 @@ type MessageType = {
 };
 
 function Chat({ chatId }: Props) {
-  const { data: session } = useSession();
+  const [user] = useAuthState(auth);
   const messageEndRef = useRef<null | HTMLDivElement>(null);
   const [messages, setMessages] = useState<MessageType[]>([]);
 
   useEffect(() => {
-    if (!session?.user?.email) return;
+    if (!user?.email) return;
 
-    const userKey = session.user.email.replace(/\./g, "_");
+    const userKey = user.email.replace(/\./g, "_");
     const messagesRef = ref(database, `users/${userKey}/chats/${chatId}/messages`);
 
     const unsubscribe = onValue(messagesRef, (snapshot) => {
@@ -47,7 +47,7 @@ function Chat({ chatId }: Props) {
     });
 
     return () => unsubscribe();
-  }, [session, chatId]);
+  }, [user, chatId]);
 
   useEffect(() => {
     messageEndRef.current?.scrollIntoView();
