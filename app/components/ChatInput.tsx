@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import React, { useState } from "react";
 import { toast } from "react-hot-toast";
 import useSWR from "swr";
-import { ref, push, serverTimestamp } from "firebase/database";
+import { ref, push } from "firebase/database";
 
 import { database } from "../firebase/firebase";
 
