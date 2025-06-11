@@ -1,14 +1,7 @@
-"use client";
-
-import './globals.css'
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import Sidebar from './components/Sidebar'
-
-import Login from './components/Login'
-import ClientProvider from './components/ClientProvider'
-import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "./firebase/firebase";
+import "./globals.css";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import AuthLayout from "./components/AuthLayout";
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -17,28 +10,12 @@ export const metadata: Metadata = {
   description: 'brAIn',
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const [user, loading] = useAuthState(auth);
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className={`${inter.className} bg-[#343541]`}>
-        {loading ? null : !user ? (
-          <Login />
-        ) : (
-          <div className='flex overflow-hidden'>
-            <Sidebar />
-            <ClientProvider />
-            <div className='flex-1'>
-              {children}
-            </div>
-          </div>
-        )}
+        <AuthLayout>{children}</AuthLayout>
       </body>
     </html>
-  )
+  );
 }

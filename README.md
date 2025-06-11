@@ -68,7 +68,7 @@ To run this project, you will need to add the following environment variables to
 
 `NEXT_PUBLIC_FIREBASE_DATABASE_URL`
 
-`FIREBASE_SERVICE_ACCOUNT_KEY`
+`FIREBASE_SERVICE_ACCOUNT_KEY_BASE64`
 
 `FIREBASE_DATABASE_URL`
 
