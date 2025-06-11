@@ -40,7 +40,7 @@ export default async function handler(
 
     const message = {
       text: answer,
-      createdAt: Date.now(), // ✅ Firestore timestamp değil!
+      createdAt: Date.now(), // Use numeric timestamp for RTDB
       user: {
         name: "brAIn",
         email: "brAIn",
@@ -49,10 +49,10 @@ export default async function handler(
       },
     };
 
-    // ✅ E-posta adresi "." karakterinden arındırılıyor (RealtimeDB için)
+    // Strip '.' from email so it can be used as an RTDB key
     const userKey = session?.user?.email.replace(/\./g, "_");
 
-    // ✅ Realtime Database'e veri yazılıyor
+    // Write the message to Realtime Database
     await adminDb
       .ref(`users/${userKey}/chats/${chatId}/messages`)
       .push(message);
