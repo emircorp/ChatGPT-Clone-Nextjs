@@ -1,7 +1,7 @@
 import Chat from "../../components/Chat";
 import ChatInput from "../../components/ChatInput";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../api/auth/[...nextauth]/route";
+import { authOptions } from "../../lib/authOptions";
 
 type Props = {
   params: { chatId: string };
